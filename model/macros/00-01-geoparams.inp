@@ -42,7 +42,7 @@ BEND_INT = 50*CONV              ! stiffener bend on intermediate stiffener
 
 INT_N = 1                       ! number of intermediate stiffeners
 INT_BACK = 50*CONV              ! intermediate stiffener distance from back
-INT_OFF = 50*CONV       ! intermediate stiffener offset distance
+INT_OFF = 50*CONV               ! intermediate stiffener offset distance
 
 
 
@@ -54,9 +54,9 @@ BASE_X = STEP_L/2
 BASE_Y = STEP_W/2
 BASE_Z = STEP_H
 
-BASE_T = 10*CONV
-BASE_W = 100*CONV
 BASE_L = 180*CONV
+BASE_W = 100*CONV
+BASE_T = 10*CONV
 
 BASE_BX = BASE_X                ! bolt location in x
 BASE_BY = BASE_Y-50*CONV        ! bolt location in y
