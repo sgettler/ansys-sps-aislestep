@@ -1,0 +1,33 @@
+!-------------------------------------------------------------------------------
+! Project Name:         SPS Aisle Step
+! Project Number:       n/a
+!
+! Author:               SG
+! Date Created:         2017-06-01
+! Date Modified:        2024-08-16
+!
+! Description:          Handrail loads.
+!
+! File Inputs:          01-00-Model.db, 00-02-loadparams.inp
+! File Outputs:         02-00-Static.db
+!-------------------------------------------------------------------------------
+
+finish
+/clear
+
+
+! load cases
+!---------------------------------------
+
+/solu
+resume,01-00-Model,db
+/input,00-02-loadparams,inp,Macros
+
+antype,static
+
+f,N_LOAD_RAIL,fx,LOAD_RAIL
+
+solve
+
+save,02-00-Static,db
+finish
