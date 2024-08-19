@@ -1,0 +1,14 @@
+!---------------------------------------
+! BOUNDARY CONDITIONS
+!---------------------------------------
+
+! base support area
+!---------------------------------------
+
+asel,none
+cmsel,a,A_SUPP
+esla
+nsle
+d,all,ux
+d,all,uy
+d,all,uz

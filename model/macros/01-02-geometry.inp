@@ -1,0 +1,842 @@
+!---------------------------------------
+! MODEL GEOMETRY
+!---------------------------------------
+
+! computed values
+!---------------------------------------
+
+! tread noses
+*do,J,1,STEP_N
+    TRD_Y%J% = (J-1)*STEP_W/STEP_N
+*enddo
+
+*do,K,1,STEP_N
+    TRD_Z%K% = K*STEP_H/STEP_N
+*enddo
+
+
+! intermediate stiffeners
+*do,I,1,INT_N
+    INT_X%I% = I*STEP_L/(INT_N+1)-STEP_T/2+INT_OFF
+*enddo
+
+
+
+! aisle step
+!---------------------------------------
+
+! top plate
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,STEP_T,STEP_W-STEP_T,STEP_H-BEND_TOP
+k,KP0+2,STEP_T,STEP_W-STEP_T,STEP_H-2*STEP_T
+k,KP0+3,STEP_T,STEP_W-2*STEP_T,STEP_H-2*STEP_T ! arc centre
+k,KP0+4,STEP_T,STEP_W-2*STEP_T,STEP_H-STEP_T
+*do,H,STEP_N,1,-1
+    k,KP0+(4+(STEP_N-H)*6+1) ,STEP_T,TRD_Y%H%+2*STEP_T,TRD_Z%H%-STEP_T
+    k,KP0+(4+(STEP_N-H)*6+2) ,STEP_T,TRD_Y%H%+2*STEP_T,TRD_Z%H%-2*STEP_T ! arc centre
+    k,KP0+(4+(STEP_N-H)*6+3) ,STEP_T,TRD_Y%H%+STEP_T,TRD_Z%H%-2*STEP_T
+    *if,H,gt,1,then
+        k,KP0+(4+(STEP_N-H)*6+4),STEP_T,TRD_Y%H%+STEP_T,TRD_Z%H-1%+STEP_T
+        k,KP0+(4+(STEP_N-H)*6+5),STEP_T,TRD_Y%H%-STEP_T,TRD_Z%H-1%+STEP_T ! arc centre
+        k,KP0+(4+(STEP_N-H)*6+6),STEP_T,TRD_Y%H%-STEP_T,TRD_Z%H-1%-STEP_T
+    *endif
+*enddo
+k,KP0+(4+(STEP_N*6-3)+1),STEP_T,STEP_T,BEND_STF
+k,KP0+(4+(STEP_N*6-3)+2),STEP_T,STEP_T,2*STEP_T
+k,KP0+(4+(STEP_N*6-3)+3),STEP_T,2*STEP_T,2*STEP_T ! arc centre
+k,KP0+(4+(STEP_N*6-3)+4),STEP_T,2*STEP_T,STEP_T
+k,KP0+(4+(STEP_N*6-3)+5),STEP_T,BEND_FOOT-2*STEP_T,STEP_T
+k,KP0+(4+(STEP_N*6-3)+6),STEP_T,BEND_FOOT-2*STEP_T,2*STEP_T ! arc centre
+k,KP0+(4+(STEP_N*6-3)+7),STEP_T,BEND_FOOT-STEP_T,2*STEP_T
+k,KP0+(4+(STEP_N*6-3)+8),STEP_T,BEND_FOOT-STEP_T,BEND_STF
+
+lsel,none
+l,KP0+1,KP0+2
+larc,KP0+2,KP0+4,KP0+3,STEP_T
+*do,H,STEP_N,1,-1
+    l,KP0+(4+(STEP_N-H)*6+0),KP0+(4+(STEP_N-H)*6+1)
+    larc,KP0+(4+(STEP_N-H)*6+1),KP0+(4+(STEP_N-H)*6+3),KP0+(4+(STEP_N-H)*6+2),STEP_T
+
+    *if,H,gt,1,then
+        l,KP0+(4+(STEP_N-H)*6+3),KP0+(4+(STEP_N-H)*6+4)
+        larc,KP0+(4+(STEP_N-H)*6+4),KP0+(4+(STEP_N-H)*6+6),KP0+(4+(STEP_N-H)*6+5),2*STEP_T
+    *endif
+*enddo
+l,KP0+(4+(STEP_N*6-3)+0),KP0+(4+(STEP_N*6-3)+1)
+l,KP0+(4+(STEP_N*6-3)+1),KP0+(4+(STEP_N*6-3)+2)
+larc,KP0+(4+(STEP_N*6-3)+2),KP0+(4+(STEP_N*6-3)+4),KP0+(4+(STEP_N*6-3)+3),STEP_T
+l,KP0+(4+(STEP_N*6-3)+4),KP0+(4+(STEP_N*6-3)+5)
+larc,KP0+(4+(STEP_N*6-3)+5),KP0+(4+(STEP_N*6-3)+7),KP0+(4+(STEP_N*6-3)+6),STEP_T
+l,KP0+(4+(STEP_N*6-3)+7),KP0+(4+(STEP_N*6-3)+8)
+cm,L_TMP1,line
+
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,STEP_T,0,0
+k,KP0+2,STEP_L-STEP_T,0,0
+
+lsel,none
+l,KP0+1,KP0+2
+cm,L_TMP2,line
+
+lsel,none
+cmsel,a,L_TMP1
+cmsel,a,L_TMP2
+asel,none
+adrag,L_TMP1,,,,,,L_TMP2
+cmdele,L_TMP1
+cmdele,L_TMP2
+
+*do,I,1,INT_N
+    wprota,90,90,0
+    wpoffs,,,INT_X%I%+STEP_T
+    asbw,all
+    wpcsys
+    wprota,90,90,0
+    wpoffs,,,INT_X%I%+BEND_INT
+    asbw,all
+    wpcsys
+    cm,A_TMP1,area
+
+    *get,KP0,kp,,num,maxd
+    ksel,none
+    k,KP0+1,INT_X%I%+BEND_INT,STEP_W-INT_BACK-STEP_T,STEP_H-STEP_T
+    k,KP0+2,INT_X%I%+2*STEP_T,STEP_W-INT_BACK-STEP_T,STEP_H-STEP_T
+    k,KP0+3,INT_X%I%+2*STEP_T,STEP_W-INT_BACK-2*STEP_T,STEP_H-STEP_T ! arc centre
+    k,KP0+4,INT_X%I%+STEP_T,STEP_W-INT_BACK-2*STEP_T,STEP_H-STEP_T
+    k,KP0+5,INT_X%I%+STEP_T,TRD_Y%STEP_N%+2*STEP_T,STEP_H-STEP_T
+    k,KP0+6,INT_X%I%+BEND_INT,TRD_Y%STEP_N%+2*STEP_T,STEP_H-STEP_T
+
+    lsel,none
+    l,KP0+1,KP0+2
+    larc,KP0+2,KP0+4,KP0+3,STEP_T
+    l,KP0+4,KP0+5
+    l,KP0+5,KP0+6
+    l,KP0+6,KP0+1
+    cm,L_TMP1,line
+
+    asel,none
+    al,L_TMP1
+    cmdele,L_TMP1
+    cm,A_TMP2,area
+
+    asel,none
+    cmsel,a,A_TMP1
+    cmsel,a,A_TMP2
+    cmdele,A_TMP1
+    cmdele,A_TMP2
+    aptn,all
+*enddo
+cm,A_TMP1,area
+
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,INT_X1+STEP_T,BASE_Y+STEP_PW/2,BASE_Z-STEP_T
+k,KP0+2,INT_X1+STEP_T-STEP_PL,BASE_Y+STEP_PW/2,BASE_Z-STEP_T
+k,KP0+3,INT_X1+STEP_T-STEP_PL,BASE_Y-STEP_PW/2,BASE_Z-STEP_T
+k,KP0+4,INT_X1+STEP_T,BASE_Y-STEP_PW/2,BASE_Z-STEP_T
+
+lsel,none
+l,KP0+1,KP0+2
+l,KP0+2,KP0+3
+l,KP0+3,KP0+4
+l,KP0+4,KP0+1
+cm,L_TMP1,line
+
+asel,none
+al,L_TMP1
+cmdele,L_TMP1
+wprota,90,90,0
+wpoffs,,,BASE_BX
+asbw,all
+*if,BASE_BSX,ne,0,then
+    wpoffs,,,BASE_BSX
+    asbw,all
+*endif
+wpcsys
+wprota,0,-90,0
+wpoffs,,,BASE_BY
+asbw,all
+*if,BASE_BSY,ne,0,then
+    wpoffs,,,BASE_BSY
+    asbw,all
+*endif
+wpcsys
+cm,A_TMP2,area
+
+asel,none
+cmsel,a,A_TMP1
+cmsel,a,A_TMP2
+cmdele,A_TMP1
+cmdele,A_TMP2
+aptn,all
+
+aatt,MAT_STEEL,RCO_DUMMY,ETY_SHELL,,SEC_STEP
+cm,A_STEP_T,area
+
+asel,r,loc,x,BASE_X-STEP_PL/2,BASE_X+STEP_PL/2
+asel,r,loc,y,BASE_Y-STEP_PW/2,BASE_Y+STEP_PW/2
+asel,r,loc,z,BASE_Z-STEP_T-TOL,BASE_Z-STEP_T+TOL
+aatt,MAT_STEEL,RCO_DUMMY,ETY_SHELL,,SEC_PLT
+cm,A_STEP_PT,area
+
+
+! bottom plate
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,STEP_T,STEP_W-INT_BACK-BEND_FOOT+STEP_T,BEND_STF
+k,KP0+2,STEP_T,STEP_W-INT_BACK-BEND_FOOT+STEP_T,2*STEP_T
+k,KP0+3,STEP_T,STEP_W-INT_BACK-BEND_FOOT+2*STEP_T,2*STEP_T ! arc centre
+k,KP0+4,STEP_T,STEP_W-INT_BACK-BEND_FOOT+2*STEP_T,STEP_T
+k,KP0+5,STEP_T,STEP_W-INT_BACK-2*STEP_T,STEP_T
+k,KP0+6,STEP_T,STEP_W-INT_BACK-2*STEP_T,2*STEP_T ! arc centre
+k,KP0+7,STEP_T,STEP_W-INT_BACK-STEP_T,2*STEP_T
+k,KP0+8,STEP_T,STEP_W-INT_BACK-STEP_T,BEND_STF
+
+lsel,none
+l,KP0+1,KP0+2
+larc,KP0+2,KP0+4,KP0+3,STEP_T
+l,KP0+4,KP0+5
+larc,KP0+5,KP0+7,KP0+6,STEP_T
+l,KP0+7,KP0+8
+cm,L_TMP1,line
+
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,STEP_T,0,0
+k,KP0+2,STEP_L-STEP_T,0,0
+
+lsel,none
+l,KP0+1,KP0+2
+cm,L_TMP2,line
+
+lsel,none
+cmsel,a,L_TMP1
+cmsel,a,L_TMP2
+asel,none
+adrag,L_TMP1,,,,,,L_TMP2
+cmdele,L_TMP1
+cmdele,L_TMP2
+
+*do,I,1,INT_N
+    wprota,90,90,0
+    wpoffs,,,INT_X%I%+STEP_T
+    asbw,all
+    wpcsys
+    wprota,90,90,0
+    wpoffs,,,INT_X%I%+2*STEP_T
+    asbw,all
+    wpcsys
+    wprota,90,90,0
+    wpoffs,,,INT_X%I%+BEND_INT
+    asbw,all
+    wpcsys
+*enddo
+
+aatt,MAT_STEEL,RCO_DUMMY,ETY_SHELL,,SEC_STEP
+cm,A_STEP_B,area
+
+
+! left end plate part 1
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,STEP_T,STEP_W-STEP_T,STEP_H-BEND_TOP
+k,KP0+2,STEP_T,STEP_W-STEP_T,STEP_H-2*STEP_T
+k,KP0+3,STEP_T,STEP_W-2*STEP_T,STEP_H-2*STEP_T ! arc centre
+k,KP0+4,STEP_T,STEP_W-2*STEP_T,STEP_H-STEP_T
+*do,H,STEP_N,1,-1
+    k,KP0+(4+(STEP_N-H)*6+1),STEP_T,TRD_Y%H%+2*STEP_T,TRD_Z%H%-STEP_T
+    k,KP0+(4+(STEP_N-H)*6+2),STEP_T,TRD_Y%H%+2*STEP_T,TRD_Z%H%-2*STEP_T ! arc centre
+    k,KP0+(4+(STEP_N-H)*6+3),STEP_T,TRD_Y%H%+STEP_T,TRD_Z%H%-2*STEP_T
+    *if,H,gt,1,then
+        k,KP0+(4+(STEP_N-H)*6+4),STEP_T,TRD_Y%H%+STEP_T,TRD_Z%H-1%+STEP_T
+        k,KP0+(4+(STEP_N-H)*6+5),STEP_T,TRD_Y%H%-STEP_T,TRD_Z%H-1%+STEP_T ! arc centre
+        k,KP0+(4+(STEP_N-H)*6+6),STEP_T,TRD_Y%H%-STEP_T,TRD_Z%H-1%-STEP_T
+    *endif
+*enddo
+k,KP0+(4+(STEP_N*6-3)+1),STEP_T,STEP_T,2*STEP_T
+k,KP0+(4+(STEP_N*6-3)+2),STEP_T,2*STEP_T,2*STEP_T ! arc centre
+k,KP0+(4+(STEP_N*6-3)+3),STEP_T,2*STEP_T,STEP_T
+k,KP0+(4+(STEP_N*6-3)+4),STEP_T,BEND_FOOT-2*STEP_T,STEP_T
+k,KP0+(4+(STEP_N*6-3)+5),STEP_T,BEND_FOOT-2*STEP_T,2*STEP_T ! arc centre
+k,KP0+(4+(STEP_N*6-3)+6),STEP_T,BEND_FOOT-STEP_T,2*STEP_T
+k,KP0+(4+(STEP_N*6-3)+7),STEP_T,BEND_FOOT+BEND_GAP,2*STEP_T
+k,KP0+(4+(STEP_N*6-3)+8),STEP_T,STEP_W-INT_BACK-BEND_FOOT-BEND_GAP,2*STEP_T
+k,KP0+(4+(STEP_N*6-3)+9),STEP_T,STEP_W-INT_BACK-BEND_FOOT+STEP_T,2*STEP_T
+k,KP0+(4+(STEP_N*6-3)+10),STEP_T,STEP_W-INT_BACK-BEND_FOOT+2*STEP_T,2*STEP_T ! arc centre
+k,KP0+(4+(STEP_N*6-3)+11),STEP_T,STEP_W-INT_BACK-BEND_FOOT+2*STEP_T,STEP_T
+k,KP0+(4+(STEP_N*6-3)+12),STEP_T,STEP_W-INT_BACK-2*STEP_T,STEP_T
+k,KP0+(4+(STEP_N*6-3)+13),STEP_T,STEP_W-INT_BACK-2*STEP_T,2*STEP_T ! arc centre
+k,KP0+(4+(STEP_N*6-3)+14),STEP_T,STEP_W-INT_BACK-STEP_T,2*STEP_T
+k,KP0+(4+(STEP_N*6-3)+15),STEP_T,STEP_W-INT_BACK-STEP_T,0
+k,KP0+(4+(STEP_N*6-3)+16),STEP_T,STEP_W-2*STEP_T-BEND_GAP,0
+k,KP0+(4+(STEP_N*6-3)+17),STEP_T,STEP_W-2*STEP_T,BEND_GAP
+k,KP0+(4+(STEP_N*6-3)+18),STEP_T,STEP_W-2*STEP_T,STEP_H-BEND_TOP-BEND_GAP
+k,KP0+(4+(STEP_N*6-3)+19),STEP_T,STEP_W-2*STEP_T,STEP_H-BEND_TOP
+
+lsel,none
+l,KP0+1,KP0+(4+(STEP_N*6-3)+19)
+l,KP0+(4+(STEP_N*6-3)+19),KP0+(4+(STEP_N*6-3)+18)
+l,KP0+(4+(STEP_N*6-3)+18),KP0+(4+(STEP_N*6-3)+17)
+l,KP0+(4+(STEP_N*6-3)+17),KP0+(4+(STEP_N*6-3)+16)
+l,KP0+(4+(STEP_N*6-3)+16),KP0+(4+(STEP_N*6-3)+15)
+l,KP0+(4+(STEP_N*6-3)+15),KP0+(4+(STEP_N*6-3)+14)
+larc,KP0+(4+(STEP_N*6-3)+14),KP0+(4+(STEP_N*6-3)+12),KP0+(4+(STEP_N*6-3)+13),STEP_T
+l,KP0+(4+(STEP_N*6-3)+12),KP0+(4+(STEP_N*6-3)+11)
+larc,KP0+(4+(STEP_N*6-3)+11),KP0+(4+(STEP_N*6-3)+9),KP0+(4+(STEP_N*6-3)+10),STEP_T
+l,KP0+(4+(STEP_N*6-3)+9),KP0+(4+(STEP_N*6-3)+8)
+l,KP0+(4+(STEP_N*6-3)+8),KP0+(4+(STEP_N*6-3)+7)
+l,KP0+(4+(STEP_N*6-3)+7),KP0+(4+(STEP_N*6-3)+6)
+larc,KP0+(4+(STEP_N*6-3)+6),KP0+(4+(STEP_N*6-3)+4),KP0+(4+(STEP_N*6-3)+5),STEP_T
+l,KP0+(4+(STEP_N*6-3)+4),KP0+(4+(STEP_N*6-3)+3)
+larc,KP0+(4+(STEP_N*6-3)+3),KP0+(4+(STEP_N*6-3)+1),KP0+(4+(STEP_N*6-3)+2),STEP_T
+l,KP0+(4+(STEP_N*6-3)+1),KP0+(4+(STEP_N*6-3)+0)
+*do,H,1,STEP_N
+    *if,H,gt,1,then
+        larc,KP0+(4+(STEP_N-H)*6+6),KP0+(4+(STEP_N-H)*6+4),KP0+(4+(STEP_N-H)*6+5),2*STEP_T
+        l,KP0+(4+(STEP_N-H)*6+4),KP0+(4+(STEP_N-H)*6+3)
+    *endif
+    larc,KP0+(4+(STEP_N-H)*6+3),KP0+(4+(STEP_N-H)*6+1),KP0+(4+(STEP_N-H)*6+2),STEP_T
+    l,KP0+(4+(STEP_N-H)*6+1),KP0+(4+(STEP_N-H)*6+0)
+*enddo
+larc,KP0+4,KP0+2,KP0+3,STEP_T
+l,KP0+2,KP0+1
+cm,L_TMP1,line
+
+asel,none
+al,L_TMP1
+cmdele,L_TMP1
+cm,A_TMP1,area
+
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,STEP_T,BEND_FOOT-STEP_T,BEND_STF
+k,KP0+2,STEP_T,BEND_FOOT-STEP_T,2*STEP_T
+k,KP0+3,STEP_T,BEND_FOOT-2*STEP_T,2*STEP_T ! arc centre
+k,KP0+4,STEP_T,BEND_FOOT-2*STEP_T,STEP_T
+k,KP0+5,STEP_T,2*STEP_T,STEP_T
+k,KP0+6,STEP_T,2*STEP_T,2*STEP_T ! arc centre
+k,KP0+7,STEP_T,STEP_T,2*STEP_T
+k,KP0+8,STEP_T,STEP_T,BEND_STF
+
+lsel,none
+l,KP0+1,KP0+2
+larc,KP0+2,KP0+4,KP0+3,STEP_T
+l,KP0+4,KP0+5
+larc,KP0+5,KP0+7,KP0+6,STEP_T
+l,KP0+7,KP0+8
+l,KP0+8,KP0+1
+cm,L_TMP1,line
+
+asel,none
+al,L_TMP1
+cmdele,L_TMP1
+cm,A_TMP2,area
+
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,STEP_T,STEP_W-INT_BACK-STEP_T,BEND_STF
+k,KP0+2,STEP_T,STEP_W-INT_BACK-STEP_T,2*STEP_T
+k,KP0+3,STEP_T,STEP_W-INT_BACK-2*STEP_T,2*STEP_T ! arc centre
+k,KP0+4,STEP_T,STEP_W-INT_BACK-2*STEP_T,STEP_T
+k,KP0+5,STEP_T,STEP_W-INT_BACK-BEND_FOOT+2*STEP_T,STEP_T
+k,KP0+6,STEP_T,STEP_W-INT_BACK-BEND_FOOT+2*STEP_T,2*STEP_T ! arc centre
+k,KP0+7,STEP_T,STEP_W-INT_BACK-BEND_FOOT+STEP_T,2*STEP_T
+k,KP0+8,STEP_T,STEP_W-INT_BACK-BEND_FOOT+STEP_T,BEND_STF
+
+lsel,none
+l,KP0+1,KP0+2
+larc,KP0+2,KP0+4,KP0+3,STEP_T
+l,KP0+4,KP0+5
+larc,KP0+5,KP0+7,KP0+6,STEP_T
+l,KP0+7,KP0+8
+l,KP0+8,KP0+1
+cm,L_TMP1,line
+
+asel,none
+al,L_TMP1
+cmdele,L_TMP1
+cm,A_TMP3,area
+
+asel,none
+cmsel,a,A_TMP1
+cmsel,a,A_TMP2
+cmsel,a,A_TMP3
+cmdele,A_TMP1
+cmdele,A_TMP2
+cmdele,A_TMP3
+aptn,all
+cm,A_STEP_L_1,area
+
+
+! left end plate part 2
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,BEND_FOOT-STEP_T,BEND_FOOT+BEND_GAP,BEND_STF
+k,KP0+2,BEND_FOOT-STEP_T,BEND_FOOT+BEND_GAP,2*STEP_T
+k,KP0+3,BEND_FOOT-2*STEP_T,BEND_FOOT+BEND_GAP,2*STEP_T ! arc centre
+k,KP0+4,BEND_FOOT-2*STEP_T,BEND_FOOT+BEND_GAP,STEP_T
+k,KP0+5,2*STEP_T,BEND_FOOT+BEND_GAP,STEP_T
+k,KP0+6,2*STEP_T,BEND_FOOT+BEND_GAP,2*STEP_T ! arc centre
+k,KP0+7,STEP_T,BEND_FOOT+BEND_GAP,2*STEP_T
+
+lsel,none
+l,KP0+1,KP0+2
+larc,KP0+2,KP0+4,KP0+3,STEP_T
+l,KP0+4,KP0+5
+larc,KP0+5,KP0+7,KP0+6,STEP_T
+cm,L_TMP1,line
+
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,0,BEND_FOOT+BEND_GAP,0
+k,KP0+2,0,STEP_W-INT_BACK-BEND_FOOT-BEND_GAP,0
+
+lsel,none
+l,KP0+1,KP0+2
+cm,L_TMP2,line
+
+lsel,none
+cmsel,a,L_TMP1
+cmsel,a,L_TMP2
+asel,none
+adrag,L_TMP1,,,,,,L_TMP2
+cmdele,L_TMP1
+cmdele,L_TMP2
+cm,A_STEP_L_2,area
+
+
+! left end plate part 3
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,BEND_STF,STEP_W-STEP_T,BEND_GAP
+k,KP0+2,2*STEP_T,STEP_W-STEP_T,BEND_GAP
+k,KP0+3,2*STEP_T,STEP_W-2*STEP_T,BEND_GAP ! arc centre
+k,KP0+4,STEP_T,STEP_W-2*STEP_T,BEND_GAP
+
+lsel,none
+l,KP0+1,KP0+2
+larc,KP0+2,KP0+4,KP0+3,STEP_T
+cm,L_TMP1,line
+
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,0,STEP_W,BEND_GAP
+k,KP0+2,0,STEP_W,STEP_H-BEND_TOP-BEND_GAP
+
+lsel,none
+l,KP0+1,KP0+2
+cm,L_TMP2,line
+
+lsel,none
+cmsel,a,L_TMP1
+cmsel,a,L_TMP2
+asel,none
+adrag,L_TMP1,,,,,,L_TMP2
+cmdele,L_TMP1
+cmdele,L_TMP2
+cm,A_STEP_L_3,area
+
+
+! left end plate
+asel,none
+cmsel,a,A_STEP_L_1
+cmsel,a,A_STEP_L_2
+cmsel,a,A_STEP_L_3
+lsla
+ksll
+nummrg,kp,TOL
+cmdele,A_STEP_L_1
+cmdele,A_STEP_L_2
+cmdele,A_STEP_L_3
+
+aatt,MAT_STEEL,RCO_DUMMY,ETY_SHELL,,SEC_STEP
+cm,A_STEP_L,area
+
+
+! right end plate (mirror left end plate)
+asel,none
+cmsel,a,A_STEP_L
+
+wpoffs,STEP_L/2
+csys,wp
+arsym,x,all
+csys,0
+wpcsys
+cmsel,u,A_STEP_L
+
+aatt,MAT_STEEL,RCO_DUMMY,ETY_SHELL,,SEC_STEP
+cm,A_STEP_R,area
+
+
+! intermediate stiffener plates part 1
+*do,I,1,INT_N
+
+
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,INT_X%I%+STEP_T,STEP_W-INT_BACK-2*STEP_T,STEP_H-STEP_T
+*do,H,STEP_N,1,-1
+    k,KP0+(1+(STEP_N-H)*6+1) ,INT_X%I%+STEP_T,TRD_Y%H%+2*STEP_T,TRD_Z%H%-STEP_T
+    k,KP0+(1+(STEP_N-H)*6+2) ,INT_X%I%+STEP_T,TRD_Y%H%+2*STEP_T,TRD_Z%H%-2*STEP_T ! arc centre
+    k,KP0+(1+(STEP_N-H)*6+3) ,INT_X%I%+STEP_T,TRD_Y%H%+STEP_T,TRD_Z%H%-2*STEP_T
+    *if,H,gt,1,then
+        k,KP0+(1+(STEP_N-H)*6+4),INT_X%I%+STEP_T,TRD_Y%H%+STEP_T,TRD_Z%H-1%+STEP_T
+        k,KP0+(1+(STEP_N-H)*6+5),INT_X%I%+STEP_T,TRD_Y%H%-STEP_T,TRD_Z%H-1%+STEP_T ! arc centre
+        k,KP0+(1+(STEP_N-H)*6+6),INT_X%I%+STEP_T,TRD_Y%H%-STEP_T,TRD_Z%H-1%-STEP_T
+    *endif
+*enddo
+k,KP0+(1+(STEP_N*6-3)+1),INT_X%I%+STEP_T,STEP_T,BEND_STF
+k,KP0+(1+(STEP_N*6-3)+2),INT_X%I%+STEP_T,STEP_T,2*STEP_T
+k,KP0+(1+(STEP_N*6-3)+3),INT_X%I%+STEP_T,2*STEP_T,2*STEP_T ! arc centre
+k,KP0+(1+(STEP_N*6-3)+4),INT_X%I%+STEP_T,2*STEP_T,STEP_T
+k,KP0+(1+(STEP_N*6-3)+5),INT_X%I%+STEP_T,BEND_FOOT-2*STEP_T,STEP_T
+k,KP0+(1+(STEP_N*6-3)+6),INT_X%I%+STEP_T,BEND_FOOT-2*STEP_T,2*STEP_T ! arc centre
+k,KP0+(1+(STEP_N*6-3)+7),INT_X%I%+STEP_T,BEND_FOOT-STEP_T,2*STEP_T
+k,KP0+(1+(STEP_N*6-3)+8),INT_X%I%+STEP_T,BEND_FOOT-STEP_T,BEND_STF
+k,KP0+(1+(STEP_N*6-3)+9),INT_X%I%+STEP_T,STEP_W-INT_BACK-BEND_FOOT+STEP_T,BEND_STF
+k,KP0+(1+(STEP_N*6-3)+10),INT_X%I%+STEP_T,STEP_W-INT_BACK-BEND_FOOT+STEP_T,2*STEP_T
+k,KP0+(1+(STEP_N*6-3)+11),INT_X%I%+STEP_T,STEP_W-INT_BACK-BEND_FOOT+2*STEP_T,2*STEP_T ! arc centre
+k,KP0+(1+(STEP_N*6-3)+12),INT_X%I%+STEP_T,STEP_W-INT_BACK-BEND_FOOT+2*STEP_T,STEP_T
+k,KP0+(1+(STEP_N*6-3)+13),INT_X%I%+STEP_T,STEP_W-INT_BACK-2*STEP_T,STEP_T
+k,KP0+(1+(STEP_N*6-3)+14),INT_X%I%+STEP_T,STEP_W-INT_BACK-2*STEP_T,2*STEP_T ! arc centre
+k,KP0+(1+(STEP_N*6-3)+15),INT_X%I%+STEP_T,STEP_W-INT_BACK-STEP_T,2*STEP_T
+k,KP0+(1+(STEP_N*6-3)+16),INT_X%I%+STEP_T,STEP_W-INT_BACK-STEP_T,BEND_STF
+k,KP0+(1+(STEP_N*6-3)+17),INT_X%I%+STEP_T,STEP_W-INT_BACK-2*STEP_T,BEND_STF
+k,KP0+(1+(STEP_N*6-3)+18),INT_X%I%+STEP_T,STEP_W-INT_BACK-2*STEP_T,BASE_Z-STEP_T-STEP_PT
+
+lsel,none
+l,KP0+1,KP0+(1+(STEP_N*6-3)+18)
+l,KP0+(1+(STEP_N*6-3)+18),KP0+(1+(STEP_N*6-3)+17)
+l,KP0+(1+(STEP_N*6-3)+17),KP0+(1+(STEP_N*6-3)+16)
+l,KP0+(1+(STEP_N*6-3)+16),KP0+(1+(STEP_N*6-3)+15)
+larc,KP0+(1+(STEP_N*6-3)+15),KP0+(1+(STEP_N*6-3)+13),KP0+(1+(STEP_N*6-3)+14),STEP_T
+l,KP0+(1+(STEP_N*6-3)+13),KP0+(1+(STEP_N*6-3)+12)
+larc,KP0+(1+(STEP_N*6-3)+12),KP0+(1+(STEP_N*6-3)+10),KP0+(1+(STEP_N*6-3)+11),STEP_T
+l,KP0+(1+(STEP_N*6-3)+10),KP0+(1+(STEP_N*6-3)+9)
+l,KP0+(1+(STEP_N*6-3)+9),KP0+(1+(STEP_N*6-3)+8)
+l,KP0+(1+(STEP_N*6-3)+8),KP0+(1+(STEP_N*6-3)+7)
+larc,KP0+(1+(STEP_N*6-3)+7),KP0+(1+(STEP_N*6-3)+5),KP0+(1+(STEP_N*6-3)+6),STEP_T
+l,KP0+(1+(STEP_N*6-3)+5),KP0+(1+(STEP_N*6-3)+4)
+larc,KP0+(1+(STEP_N*6-3)+4),KP0+(1+(STEP_N*6-3)+2),KP0+(1+(STEP_N*6-3)+3),STEP_T
+l,KP0+(1+(STEP_N*6-3)+2),KP0+(1+(STEP_N*6-3)+1)
+l,KP0+(1+(STEP_N*6-3)+1),KP0+(1+(STEP_N*6-3)+0)
+*do,H,1,STEP_N
+    *if,H,gt,1,then
+        larc,KP0+(1+(STEP_N-H)*6+6),KP0+(1+(STEP_N-H)*6+4),KP0+(1+(STEP_N-H)*6+5),2*STEP_T
+        l,KP0+(1+(STEP_N-H)*6+4),KP0+(1+(STEP_N-H)*6+3)
+    *endif
+    larc,KP0+(1+(STEP_N-H)*6+3),KP0+(1+(STEP_N-H)*6+1),KP0+(1+(STEP_N-H)*6+2),STEP_T
+    l,KP0+(1+(STEP_N-H)*6+1),KP0+(1+(STEP_N-H)*6+0)
+*enddo
+cm,L_TMP1,line
+
+asel,none
+al,L_TMP1
+cmdele,L_TMP1
+cm,A_TMP1,area
+
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,INT_X%I%+STEP_T,BEND_FOOT-STEP_T,BEND_STF
+k,KP0+2,INT_X%I%+STEP_T,BEND_FOOT-STEP_T,2*STEP_T
+k,KP0+3,INT_X%I%+STEP_T,BEND_FOOT-2*STEP_T,2*STEP_T ! arc centre
+k,KP0+4,INT_X%I%+STEP_T,BEND_FOOT-2*STEP_T,STEP_T
+k,KP0+5,INT_X%I%+STEP_T,2*STEP_T,STEP_T
+k,KP0+6,INT_X%I%+STEP_T,2*STEP_T,2*STEP_T ! arc centre
+k,KP0+7,INT_X%I%+STEP_T,STEP_T,2*STEP_T
+k,KP0+8,INT_X%I%+STEP_T,STEP_T,BEND_STF
+
+lsel,none
+l,KP0+1,KP0+2
+larc,KP0+2,KP0+4,KP0+3,STEP_T
+l,KP0+4,KP0+5
+larc,KP0+5,KP0+7,KP0+6,STEP_T
+l,KP0+7,KP0+8
+l,KP0+8,KP0+1
+cm,L_TMP1,line
+
+asel,none
+al,L_TMP1
+cmdele,L_TMP1
+cm,A_TMP2,area
+
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,INT_X%I%+STEP_T,STEP_W-INT_BACK-STEP_T,BEND_STF
+k,KP0+2,INT_X%I%+STEP_T,STEP_W-INT_BACK-STEP_T,2*STEP_T
+k,KP0+3,INT_X%I%+STEP_T,STEP_W-INT_BACK-2*STEP_T,2*STEP_T ! arc centre
+k,KP0+4,INT_X%I%+STEP_T,STEP_W-INT_BACK-2*STEP_T,STEP_T
+k,KP0+5,INT_X%I%+STEP_T,STEP_W-INT_BACK-BEND_FOOT+2*STEP_T,STEP_T
+k,KP0+6,INT_X%I%+STEP_T,STEP_W-INT_BACK-BEND_FOOT+2*STEP_T,2*STEP_T ! arc centre
+k,KP0+7,INT_X%I%+STEP_T,STEP_W-INT_BACK-BEND_FOOT+STEP_T,2*STEP_T
+k,KP0+8,INT_X%I%+STEP_T,STEP_W-INT_BACK-BEND_FOOT+STEP_T,BEND_STF
+
+lsel,none
+l,KP0+1,KP0+2
+larc,KP0+2,KP0+4,KP0+3,STEP_T
+l,KP0+4,KP0+5
+larc,KP0+5,KP0+7,KP0+6,STEP_T
+l,KP0+7,KP0+8
+l,KP0+8,KP0+1
+cm,L_TMP1,line
+
+asel,none
+al,L_TMP1
+cmdele,L_TMP1
+cm,A_TMP3,area
+
+*get,KP0,kp,,num,maxd
+ksel,none
+*if,BASE_Y+STEP_PW/2,lt,STEP_W-INT_BACK-2*STEP_T,then
+    k,KP0+1,INT_X%I%+STEP_T,BASE_Y+STEP_PW/2,BASE_Z-STEP_T
+    k,KP0+2,INT_X%I%+STEP_T,BASE_Y+STEP_PW/2,BASE_Z-STEP_T-STEP_PT
+*else
+    k,KP0+1,INT_X%I%+STEP_T,STEP_W-INT_BACK-2*STEP_T,BASE_Z-STEP_T
+    k,KP0+2,INT_X%I%+STEP_T,STEP_W-INT_BACK-2*STEP_T,BASE_Z-STEP_T-STEP_PT
+*endif
+k,KP0+3,INT_X%I%+STEP_T,BASE_Y-STEP_PW/2,BASE_Z-STEP_T-STEP_PT
+k,KP0+4,INT_X%I%+STEP_T,BASE_Y-STEP_PW/2,BASE_Z-STEP_T
+
+lsel,none
+l,KP0+1,KP0+2
+l,KP0+2,KP0+3
+l,KP0+3,KP0+4
+l,KP0+4,KP0+1
+cm,L_TMP1,line
+
+asel,none
+al,L_TMP1
+cmdele,L_TMP1
+wprota,0,-90,0
+wpoffs,,,BASE_BY
+asbw,all
+*if,BASE_BSY,ne,0,then
+    wpoffs,,,BASE_BSY
+    asbw,all
+*endif
+wpcsys
+cm,A_TMP4,area
+
+asel,none
+cmsel,a,A_TMP1
+cmsel,a,A_TMP2
+cmsel,a,A_TMP3
+cmsel,a,A_TMP4
+cmdele,A_TMP1
+cmdele,A_TMP2
+cmdele,A_TMP3
+cmdele,A_TMP4
+aptn,all
+cm,A_STEP_I%I%_1,area
+
+
+! intermediate stiffener plates part 2
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,INT_X%I%+BEND_INT,STEP_W-INT_BACK-STEP_T,BEND_STF
+k,KP0+2,INT_X%I%+2*STEP_T,STEP_W-INT_BACK-STEP_T,BEND_STF
+k,KP0+3,INT_X%I%+2*STEP_T,STEP_W-INT_BACK-2*STEP_T,BEND_STF ! arc centre
+k,KP0+4,INT_X%I%+STEP_T,STEP_W-INT_BACK-2*STEP_T,BEND_STF
+
+lsel,none
+l,KP0+1,KP0+2
+larc,KP0+2,KP0+4,KP0+3,STEP_T
+cm,L_TMP1,line
+
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,INT_X%I%,STEP_W-INT_BACK,BEND_STF
+k,KP0+2,INT_X%I%,STEP_W-INT_BACK,STEP_H-STEP_T
+
+lsel,none
+l,KP0+1,KP0+2
+cm,L_TMP2,line
+
+lsel,none
+cmsel,a,L_TMP1
+cmsel,a,L_TMP2
+asel,none
+adrag,L_TMP1,,,,,,L_TMP2
+cmdele,L_TMP1
+cmdele,L_TMP2
+wprota,0,0,0
+wpoffs,,,BASE_Z-STEP_T-STEP_PT
+asbw,all
+wpcsys
+cm,A_STEP_I%I%_2,area
+
+
+! intermediate stiffener plates
+asel,none
+cmsel,a,A_STEP_I%I%_1
+cmsel,a,A_STEP_I%I%_2
+lsla
+ksll
+nummrg,kp,TOL
+cmdele,A_STEP_I%I%_1
+cmdele,A_STEP_I%I%_2
+
+aatt,MAT_STEEL,RCO_DUMMY,ETY_SHELL,,SEC_STEP
+cm,A_STEP_I%I%,area
+
+
+*enddo
+
+
+
+! step component
+!---------------------------------------
+
+! step
+asel,none
+cmsel,a,A_STEP_T
+cmsel,a,A_STEP_L
+cmsel,a,A_STEP_R
+cmsel,a,A_STEP_B
+*do,I,1,INT_N
+    cmsel,a,A_STEP_I%I%
+*enddo
+lsla
+ksll
+nummrg,kp,TOL
+cm,A_STEP,area
+
+
+! treads
+*do,K,1,STEP_N
+    asel,none
+    cmsel,a,A_STEP_T
+    asel,r,loc,z,TRD_Z%K%-STEP_T-TOL,TRD_Z%K%-STEP_T+TOL
+    cm,A_TRD%K%,area
+*enddo
+
+asel,none
+*do,K,1,STEP_N
+    cmsel,a,A_TRD%K%
+    cmdele,A_TRD%K%
+*enddo
+cm,A_TRD,area
+
+
+
+! base support area
+!---------------------------------------
+
+! areas
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,-5*ESIZE_MAX,STEP_W-STEP_T,STEP_T
+k,KP0+2,-5*ESIZE_MAX,-5*ESIZE_MAX,STEP_T
+k,KP0+3,STEP_L+5*ESIZE_MAX,-5*ESIZE_MAX,STEP_T
+k,KP0+4,STEP_L+5*ESIZE_MAX,STEP_W-STEP_T,STEP_T
+
+lsel,none
+l,KP0+1,KP0+2
+l,KP0+2,KP0+3
+l,KP0+3,KP0+4
+l,KP0+4,KP0+1
+cm,L_TMP1,line
+
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,-5*ESIZE_MAX,STEP_W-STEP_T,STEP_H+5*ESIZE_MAX
+k,KP0+2,-5*ESIZE_MAX,STEP_W-STEP_T,STEP_T
+k,KP0+3,STEP_L+5*ESIZE_MAX,STEP_W-STEP_T,STEP_T
+k,KP0+4,STEP_L+5*ESIZE_MAX,STEP_W-STEP_T,STEP_H+5*ESIZE_MAX
+
+lsel,none
+l,KP0+1,KP0+2
+l,KP0+2,KP0+3
+l,KP0+3,KP0+4
+l,KP0+4,KP0+1
+cm,L_TMP2,line
+
+lsel,none
+cmsel,a,L_TMP1
+cmsel,a,L_TMP2
+asel,none
+al,L_TMP1
+al,L_TMP2
+cmdele,L_TMP1
+cmdele,L_TMP2
+
+aatt,MAT_STEEL,RCO_DUMMY,ETY_SHELL,,SEC_SUPP
+cm,A_SUPP,area
+
+
+
+! handrail
+!---------------------------------------
+
+! baseplate
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,BASE_X-BASE_W/2,BASE_Y+BASE_L/2,BASE_Z-STEP_T
+k,KP0+2,BASE_X-BASE_W/2,BASE_Y-BASE_L/2,BASE_Z-STEP_T
+k,KP0+3,BASE_X+BASE_W/2,BASE_Y-BASE_L/2,BASE_Z-STEP_T
+k,KP0+4,BASE_X+BASE_W/2,BASE_Y+BASE_L/2,BASE_Z-STEP_T
+
+lsel,none
+l,KP0+1,KP0+2
+l,KP0+2,KP0+3
+l,KP0+3,KP0+4
+l,KP0+4,KP0+1
+cm,L_TMP1,line
+
+asel,none
+al,L_TMP1
+cmdele,L_TMP1
+
+wprota,90,90,0
+wpoffs,,,BASE_X
+asbw,all
+wpcsys
+*if,BASE_BSX,ne,0,then
+    wprota,90,90,0
+    wpoffs,,,BASE_BX
+    asbw,all
+    wpoffs,,,BASE_BSX
+    asbw,all
+    wpcsys
+*endif
+wprota,0,-90,0
+wpoffs,,,BASE_Y
+asbw,all
+wpcsys
+*if,BASE_BSY,ne,0,then
+    wprota,0,-90,0
+    wpoffs,,,BASE_BY
+    asbw,all
+    wpoffs,,,BASE_BSY
+    asbw,all
+    wpcsys
+*endif
+
+aatt,MAT_RIGID,RCO_DUMMY,ETY_SHELL,,SEC_BASE
+cm,A_BASE,area
+
+
+! post
+*get,KP0,kp,,num,maxd
+ksel,none
+k,KP0+1,BASE_X,BASE_Y,BASE_Z-STEP_T
+k,KP0+2,BASE_X,BASE_Y,BASE_Z+RAIL_H
+k,KP0+3,BASE_X,BASE_Y-BASE_L/2,BASE_Z-STEP_T
+
+lsel,none
+l,KP0+1,KP0+2
+
+latt,MAT_RIGID,RCO_DUMMY,ETY_BEAM,,KP0+3,,SEC_RAIL
+cm,L_RAIL,line
+
+
+! weld
+lsel,none
+cmsel,a,L_RAIL
+asel,none
+cmsel,a,A_BASE
+lsla,a
+ksll
+nummrg,kp,TOL

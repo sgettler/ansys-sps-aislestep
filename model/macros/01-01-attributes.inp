@@ -1,0 +1,125 @@
+!---------------------------------------
+! ATTRIBUTES
+!---------------------------------------
+
+
+! material definitions
+!---------------------------------------
+
+*get,MAT0,mat,0,num,max
+
+MAT_STEEL = MAT0+1
+mp,ex,MAT_STEEL,206000/CONV**2                  ! N/mm2
+mp,dens,MAT_STEEL,0.000007850/CONV**3           ! kg/mm3
+mp,nuxy,MAT_STEEL,0.287
+mp,alpx,MAT_STEEL,0.0000116
+
+MAT_ELAST = MAT0+2
+mp,ex,MAT_ELAST,639.7/CONV**2                   ! N/mm2
+mp,dens,MAT_ELAST,0.000001100/CONV**3           ! kg/mm3
+mp,nuxy,MAT_ELAST,0.36
+mp,alpx,MAT_ELAST,0.0001500
+
+MAT_ELAST_BC = MAT0+3
+mp,ex,MAT_ELAST_BC,639.7/2/CONV**2              ! N/mm2
+mp,dens,MAT_ELAST_BC,0.000001150/2/CONV**3      ! kg/mm3
+mp,nuxy,MAT_ELAST_BC,0.36
+mp,alpx,MAT_ELAST,0.0001500
+
+MAT_RIGID = MAT0+4
+mp,ex,MAT_RIGID,999999999/CONV**2               ! N/mm2
+mp,dens,MAT_RIGID,0.000007850/CONV**3           ! kg/mm3
+mp,nuxy,MAT_RIGID,0.287
+mp,alpx,MAT_RIGID,0.0000116
+
+MAT0=
+
+
+
+! element types
+!---------------------------------------
+
+*get,ETY0,etype,0,num,max
+
+ETY_SHELL = ETY0+1
+et,ETY_SHELL,SHELL181
+
+ETY_CONT = ETY0+2
+et,ETY_CONT,CONTA173
+keyopt,ETY_CONT,12,0
+
+ETY_BCONT = ETY0+3
+et,ETY_BCONT,CONTA173
+keyopt,ETY_BCONT,12,5
+
+ETY_TARG = ETY0+4
+et,ETY_TARG,TARGE170
+
+ETY_LOAD = ETY0+5
+et,ETY_LOAD,SURF154
+keyopt,ETY_LOAD,2,1
+
+ETY_BEAM = ETY0+6
+et,ETY_BEAM,BEAM188
+keyopt,ETY_BEAM,3,2
+
+ETY0=
+
+
+
+! section definitions
+!---------------------------------------
+
+! step
+*get,SEC0,secp,num,max
+
+SEC_STEP = SEC0+1
+sectype,SEC_STEP,shell,,STEPPLATE
+secdata,STEP_T,MAT_STEEL,,5
+secoffset,bottom
+
+SEC_PLT = SEC0+2
+sectype,SEC_PLT,shell,,STEPREINF
+secdata,STEP_T+STEP_PT,MAT_STEEL,,5
+secoffset,user,(STEP_T+STEP_PT)/2-STEP_T
+
+SEC0=
+
+
+! handrail
+*get,SEC0,secp,num,max
+
+SEC_BASE = SEC0+1
+sectype,SEC_BASE,shell,,RAILBASE
+secdata,BASE_T,MAT_RIGID,,5
+secoffset,bottom
+
+SEC_RAIL = SEC0+2
+sectype,SEC_RAIL,beam,ctube,RAIL
+secdata,RAIL_D/2-RAIL_T,RAIL_D/2
+secoffset,cent
+
+SEC0=
+
+
+! base support area
+*get,SEC0,secp,num,max
+
+SEC_SUPP = SEC0+1
+sectype,SEC_SUPP,shell,,SEC_SUPP
+secdata,1*CONV,MAT_STEEL,,5
+secoffset,top
+
+SEC0=
+
+
+
+! real constant definitions
+!---------------------------------------
+
+*get,RCO0,rcon,0,num,max
+
+RCO_DUMMY = RCO0+1
+r,RCO_DUMMY,-1
+
+RCO0=

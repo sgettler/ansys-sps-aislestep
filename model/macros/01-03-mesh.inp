@@ -1,0 +1,80 @@
+!---------------------------------------
+! GENERATE MESH
+!---------------------------------------
+
+! line elements
+!---------------------------------------
+
+! handrail
+lsel,none
+cmsel,a,L_RAIL
+lesize,all,ESIZE_MAX
+
+lmesh,L_RAIL
+
+
+
+! area elements
+!---------------------------------------
+
+! step
+asel,none
+cmsel,a,A_STEP
+asel,all
+lsla
+lesize,all,ESIZE_MAX
+
+amesh,A_STEP
+
+
+! support
+asel,none
+cmsel,a,A_SUPP
+lsla
+lesize,all,4*ESIZE_MAX
+
+amesh,A_SUPP
+
+
+! handrail
+asel,none
+cmsel,a,A_BASE
+asel,all
+lsla
+lesize,all,ESIZE_MAX
+
+amesh,A_BASE
+
+
+
+! load elements
+!---------------------------------------
+
+CS_GLOBAL = 11
+clocal,CS_GLOBAL
+csys,0
+
+
+! uniform load areas
+mat,MAT_STEEL
+type,ETY_LOAD
+real,RCO_DUMMY
+esys,CS_GLOBAL
+
+asel,none
+cmsel,a,A_TRD
+esla
+nsle
+esurf,all
+esla,u
+cm,E_LOAD_TRD,elem
+
+
+! nodal loads
+cmsel,s,L_RAIL
+esll
+nsle
+nsel,r,loc,x,BASE_X-TOL,BASE_X+TOL
+nsel,r,loc,y,BASE_Y-TOL,BASE_Y+TOL
+nsel,r,loc,z,BASE_Z+RAIL_H-TOL,BASE_Z+RAIL_H+TOL
+cm,N_LOAD_RAIL,node

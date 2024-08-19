@@ -1,0 +1,39 @@
+!-------------------------------------------------------------------------------
+! Project Name:         SPS Aisle Step
+! Project Number:       n/a
+!
+! Author:               SG
+! Date Created:         2017-05-04
+! Date Modified:        2024-08-16
+!
+! Description:          Shell static model checks loads on steps.
+!
+! File Inputs:          00-01-geoparams.inp, 01-01-attributes.inp,
+!                       01-02-geometry.inp, 01-03-mesh.inp, 01-04-contact.inp,
+!                       01-05-boundary.inp
+! File Outputs:         01-00-Model.db
+!-------------------------------------------------------------------------------
+
+finish
+/clear
+
+
+
+! generate model
+!---------------------------------------
+
+/prep7
+/input,00-01-geoparams,inp,Macros
+/title,%PROJTITLE% | Shell Static Model
+
+/input,01-01-attributes,inp,Macros
+/input,01-02-geometry,inp,Macros
+/input,01-03-mesh,inp,Macros
+/input,01-04-contact,inp,Macros
+/input,01-05-boundary,inp,Macros
+/input,01-06-couple,inp,Macros
+
+allsel
+/input,_display,inp,Macros
+save,01-00-Model,db
+finish

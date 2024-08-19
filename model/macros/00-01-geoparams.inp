@@ -1,0 +1,70 @@
+!---------------------------------------
+! GEOMETRY PARAMETERS
+!---------------------------------------
+
+*afun,deg
+
+PROJTITLE = 'SPS Aisle Step'
+
+CONV = 0.001
+IMPCONV = 25.4*CONV
+TOL = 0.001*CONV
+
+
+ESIZE_MAX = 12*CONV
+
+CLSIZE = 50*CONV
+
+
+
+! steps
+!---------------------------------------
+
+! step
+STEP_L = 1200*CONV              ! overall length
+STEP_W = 680*CONV/2             ! overall width
+STEP_H = 300*CONV/2             ! overall height
+STEP_T = 3*CONV                 ! plate thickness
+
+STEP_N = 1                      ! number of treads
+
+STEP_PT = 6*CONV                ! additional plate at handrail connection
+STEP_PL = 200*CONV
+STEP_PW = 250*CONV
+
+
+! details
+BEND_TOP = 50*CONV              ! stiffener bend down from top rear
+BEND_FOOT = 100*CONV            ! width of base segments
+BEND_GAP = 10*CONV              ! gap between base segments
+BEND_STF = 25*CONV              ! stiffener bend up from base
+BEND_INT = 50*CONV              ! stiffener bend on intermediate stiffener
+
+INT_N = 1                       ! number of intermediate stiffeners
+INT_BACK = 50*CONV              ! intermediate stiffener distance from back
+INT_OFF = 50*CONV       ! intermediate stiffener offset distance
+
+
+
+! handrail
+!---------------------------------------
+
+! baseplate
+BASE_X = STEP_L/2
+BASE_Y = STEP_W/2
+BASE_Z = STEP_H
+
+BASE_T = 10*CONV
+BASE_W = 100*CONV
+BASE_L = 180*CONV
+
+BASE_BX = BASE_X                ! bolt location in x
+BASE_BY = BASE_Y-50*CONV        ! bolt location in y
+BASE_BSX = 0                    ! bolt spacing in x (0 = single)
+BASE_BSY = 100*CONV             ! bolt spacing in y (0 = single)
+
+
+! post
+RAIL_H = 900*CONV
+RAIL_D = 40*CONV
+RAIL_T = 3*CONV

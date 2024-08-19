@@ -1,0 +1,50 @@
+!---------------------------------------
+! NODE COUPLING
+!---------------------------------------
+
+! handrail
+!---------------------------------------
+
+! baseplate bolts
+asel,none
+cmsel,a,A_STEP
+cmsel,a,A_BASE
+esla
+
+nsle
+nsel,r,loc,x,BASE_BX-TOL,BASE_BX+TOL
+nsel,r,loc,y,BASE_BY-TOL,BASE_BY+TOL
+nsel,r,loc,z,BASE_Z-STEP_T-TOL,BASE_Z-STEP_T+TOL
+cp,next,ux,all
+cp,next,uy,all
+cp,next,uz,all
+
+*if,BASE_BSX,ne,0,then
+    nsle
+    nsel,r,loc,x,BASE_BX+BASE_BSX-TOL,BASE_BX+BASE_BSX+TOL
+    nsel,r,loc,y,BASE_BY-TOL,BASE_BY+TOL
+    nsel,r,loc,z,BASE_Z-STEP_T-TOL,BASE_Z-STEP_T+TOL
+    cp,next,ux,all
+    cp,next,uy,all
+    cp,next,uz,all
+*endif
+
+*if,BASE_BSY,ne,0,then
+    nsle
+    nsel,r,loc,x,BASE_BX-TOL,BASE_BX+TOL
+    nsel,r,loc,y,BASE_BY+BASE_BSY-TOL,BASE_BY+BASE_BSY+TOL
+    nsel,r,loc,z,BASE_Z-STEP_T-TOL,BASE_Z-STEP_T+TOL
+    cp,next,ux,all
+    cp,next,uy,all
+    cp,next,uz,all
+*endif
+
+*if,BASE_BSX,ne,0,and,BASE_BSY,ne,0,then
+    nsle
+    nsel,r,loc,x,BASE_BX+BASE_BSX-TOL,BASE_BX+BASE_BSX+TOL
+    nsel,r,loc,y,BASE_BY+BASE_BSY-TOL,BASE_BY+BASE_BSY+TOL
+    nsel,r,loc,z,BASE_Z-STEP_T-TOL,BASE_Z-STEP_T+TOL
+    cp,next,ux,all
+    cp,next,uy,all
+    cp,next,uz,all
+*endif
